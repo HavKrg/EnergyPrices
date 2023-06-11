@@ -49,59 +49,54 @@ app.MapPost("EnergyPrices/v1/Areas", async (IAreaService areaService, AreaCreate
 // Save the area to your data store or perform any other required actions
     // ...
 
-    return Results.Created($"/EnergyPrices/v1/Areas/{response.Id}", response);
+    return Results.Created($"/EnergyPrices/v1/Areas/{response.Data.Id}", response.Data);
 });
 
 app.MapGet("EnergyPrices/v1/Areas", async (IAreaService areaService) =>
 {
-    var response = await areaService.GetAllAsync();
+    var result = await areaService.GetAllAsync();
 
-    return Results.Ok(response);
+    return Results.Ok(result.Data);
 });
 
 app.MapGet("EnergyPrices/v1/Areas/{id:guid}", async (IAreaService areaService, Guid id) =>
 {
-    var response = await areaService.GetByIdAsync(id);
+    var result = await areaService.GetByIdAsync(id);
 
-    if (response == null)
+    if (!result.IsSuccessful)
     {
-        return Results.NotFound();
+        return Results.NotFound(result.ErrorMessage);
     }
 
-    return Results.Ok(response);
+    return Results.Ok(result.Data);
 });
 
 app.MapGet("EnergyPrices/v1/Areas/name/{name}", async (IAreaService areaService, string name) =>
 {
-    var area = await areaService.GetByNameAsync(name);
+    var result = await areaService.GetByNameAsync(name);
 
-    if (area == null)
+    if (!result.IsSuccessful)
     {
-        return Results.NotFound();
+        return Results.NotFound(result.ErrorMessage);
     }
 
-    return Results.Ok(area);
+    return Results.Ok(result.Data);
 });
 
 app.MapPut("/EnergyPrices/v1/Areas/{id:guid}", async (IAreaService areaService, Guid id, AreaUpdateDto areaUpdateDto) =>
 {
-    //bool isUpdated = await areaService.UpdateAsync(id, areaUpdateDto);
-
-    //if (!isUpdated)
-    //{
-    //  return Results.NotFound();
-    //}
-    await areaService.UpdateAsync(id, areaUpdateDto);
-    return Results.NoContent();
+    var result = await areaService.UpdateAsync(id, areaUpdateDto);
+    if(!result.IsSuccessful)
+        return Results.NotFound(result.ErrorMessage);
+    return Results.Ok(result.Data);
 });
 
 app.MapDelete("EnergyPrices/v1/Areas/{id:guid}", async (IAreaService areaService, Guid id) =>
     {
         var result = await areaService.DeleteAsync(id);
-        if(result == true)
-            return Results.Ok();
-        else
-            return Results.NotFound();
+        if(!result.IsSuccessful == true)
+            return Results.NotFound(result.ErrorMessage);
+        return Results.Ok();
     });
 
 app.MapControllers();

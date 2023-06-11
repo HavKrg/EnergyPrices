@@ -1,4 +1,4 @@
-using Application.Interfaces;
+/*using Application.Interfaces;
 
 namespace Application.Handlers.Areas;
 
@@ -16,3 +16,4 @@ public class DeleteAreaHandler
         return await _areaService.DeleteAsync(id);
     }
 }
+*/

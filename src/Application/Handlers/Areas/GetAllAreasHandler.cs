@@ -1,4 +1,4 @@
-using Application.DTOs.Area;
+/*using Application.DTOs.Area;
 using Application.Interfaces;
 
 namespace Application.Handlers.Areas;
@@ -15,4 +15,4 @@ public class GetAllAreasHandler {
     {
         return await _areaService.GetAllAsync();
     }
-}
+}*/

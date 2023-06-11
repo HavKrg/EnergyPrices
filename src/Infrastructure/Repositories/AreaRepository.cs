@@ -50,38 +50,37 @@ public class AreaRepository : IAreaRepository
         return area;
     }
 
-    public async Task<Area> AddAsync(Area area)
+    public async Task<Area?> AddAsync(Area area)
     {
         await _context.AddAsync(area);
-        await _context.SaveChangesAsync();
-        return area;
+        int addedRows = await _context.SaveChangesAsync();
+        if(addedRows > 0)
+            return area;
+        return null;
     }
 
-    public async Task<Area> UpdateAsync(Area area)
+    public async Task<Area?> UpdateAsync(Area area)
     {
         _context.Areas.Update(area);
-        await _context.SaveChangesAsync();
-        return area;
+        int updatedRows = await _context.SaveChangesAsync();
+        if(updatedRows > 0)
+            return area;
+        return null;
     }
 
-    public async Task<bool> DeleteAsync(Guid id)
+    public async Task<bool> DeleteAsync(Area area)
     {
-        var area = await GetByIdAsync(id);
-        
-        if(area == null)
-            return false;
-
         _context.Areas.Remove(area);
         var deletedRows = await _context.SaveChangesAsync();
         
         if (deletedRows > 0)
         {
-            Console.WriteLine($"Area with ID {id} successfully deleted.");
+            Console.WriteLine($"Succesfully deleted Area with ID: {area.Id}.");
             return true;
         }
         else
         {
-            Console.WriteLine($"No Area with ID {id} was found to delete.");
+            Console.WriteLine($"Failed to delete Area with ID: {area.Id}.");
             return false;
         }
     }

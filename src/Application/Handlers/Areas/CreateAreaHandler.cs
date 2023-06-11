@@ -1,4 +1,4 @@
-using Application.DTOs.Area;
+/*using Application.DTOs.Area;
 using Application.Interfaces;
 
 namespace Application.Handlers.Areas;
@@ -16,4 +16,4 @@ public class CreateAreaHandler {
     {
         return await _areaService.AddAsync(areaCreateDto);
     }
-}
+}*/

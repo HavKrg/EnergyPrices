@@ -3,6 +3,7 @@ using Application.DTOs.Area;
 using Application.Interfaces;
 using Application.Mappers.DTOs;
 using Application.Services;
+using Core.Entities;
 using Core.Interfaces;
 
 namespace Application.Services;
@@ -18,57 +19,77 @@ public class AreaService : IAreaService
     }
 
 
-    public async Task<IEnumerable<AreaResponseDto>> GetAllAsync()
+    public async Task<OperationResult<IEnumerable<AreaResponseDto>>> GetAllAsync()
     {
         var areas = await _areaRepository.GetAllAsync();
         
         var response = areas.Select(area => AreaMappers.AreaToAreaResponseMapper(area)).ToList();
         
-        return response;
+        return OperationResult<IEnumerable<AreaResponseDto>>
+                .Success(response);
     }
 
-    public async Task<AreaResponseDto?> GetByIdAsync(Guid id)
+    public async Task<OperationResult<AreaResponseDto>> GetByIdAsync(Guid areaId)
     {
-        var area = await _areaRepository.GetByIdAsync(id);
+        var area = await _areaRepository.GetByIdAsync(areaId);
         
         if(area == null)
-            return null;
-        
-        return AreaMappers.AreaToAreaResponseMapper(area);
+            return OperationResult<AreaResponseDto>
+                    .Failure($"unable to find an Area with ID: {areaId}");
+
+        return OperationResult<AreaResponseDto>
+                .Success(AreaMappers.AreaToAreaResponseMapper(area));
     }
 
-    public async Task<AreaResponseDto?> GetByNameAsync(string name)
+    public async Task<OperationResult<AreaResponseDto>> GetByNameAsync(string name)
     {
         var area  = await _areaRepository.GetByNameAsync(name);
         
         if(area == null)
-            return null;
+            return OperationResult<AreaResponseDto>
+                    .Failure($"unable to find an Area with Name: {name} from database");
         
-        return AreaMappers.AreaToAreaResponseMapper(area);
+        return OperationResult<AreaResponseDto>
+                .Success(AreaMappers.AreaToAreaResponseMapper(area));
     }
 
-    public async Task<AreaResponseDto> AddAsync(AreaCreateDto areaCreateDto)
+    public async Task<OperationResult<AreaResponseDto>> AddAsync(AreaCreateDto areaCreateDto)
     {
         var newArea = AreaMappers.CreateAreaToAreaMapper(areaCreateDto);
                 
         newArea = await _areaRepository.AddAsync(newArea);
-        return AreaMappers.AreaToAreaResponseMapper(newArea);
+
+        if(newArea == null)
+            return OperationResult<AreaResponseDto>
+                    .Failure($"unable to add {areaCreateDto.Name} to database");
+        return OperationResult<AreaResponseDto>.Success(AreaMappers.AreaToAreaResponseMapper(newArea));
     }
 
-    public async Task<AreaResponseDto> UpdateAsync(Guid areaId, AreaUpdateDto areaUpdateDto)
+    public async Task<OperationResult<AreaResponseDto>> UpdateAsync(Guid areaId, AreaUpdateDto areaUpdateDto)
     {
         var existingArea = await _areaRepository.GetByIdAsync(areaId);
+        if(existingArea == null)
+            return OperationResult<AreaResponseDto>.Failure($"unable to find an Area with ID: {areaId}");
         
         existingArea.Name = areaUpdateDto.Name;
         existingArea.NormalizedName = areaUpdateDto.Name.ToUpperInvariant();
         existingArea.Description = areaUpdateDto.Description;
         existingArea.Modified = DateTime.Now;
         var response = await _areaRepository.UpdateAsync(existingArea);
-        return AreaMappers.AreaToAreaResponseMapper(response);
+        if(response == null)
+            return OperationResult<AreaResponseDto>.Failure($"unable to delete the Area with ID: {areaId}");
+        return OperationResult<AreaResponseDto>.Success(AreaMappers.AreaToAreaResponseMapper(existingArea));
     }
 
-    public Task<bool> DeleteAsync(Guid id)
+    public async Task<OperationResult> DeleteAsync(Guid areaId)
     {
-        return _areaRepository.DeleteAsync(id);
+        var area = await _areaRepository.GetByIdAsync(areaId);
+        if(area == null)
+            return OperationResult.Failure($"unable to find an Area with ID: {areaId}");
+
+        var result = await _areaRepository.DeleteAsync(area);
+        if(result)
+            return OperationResult.Success();
+        return OperationResult.Failure($"unable to delete Area with Id {areaId}");
     }
 }

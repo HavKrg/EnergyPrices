@@ -1,14 +1,14 @@
 using Application.DTOs.Area;
-using Application.Handlers.Areas;
+using Core.Entities;
 
 namespace Application.Interfaces;
 
 public interface IAreaService {
-    Task<IEnumerable<AreaResponseDto>> GetAllAsync();
-    Task<AreaResponseDto?> GetByIdAsync(Guid id);
-    Task<AreaResponseDto?> GetByNameAsync(string name);
-    Task<AreaResponseDto> AddAsync(AreaCreateDto areaCreateDto);
-    Task<AreaResponseDto> UpdateAsync(Guid id, AreaUpdateDto areaUpdateDto);
-    Task<bool> DeleteAsync(Guid id);
+    Task<OperationResult<IEnumerable<AreaResponseDto>>> GetAllAsync();
+    Task<OperationResult<AreaResponseDto>> GetByIdAsync(Guid areaId);
+    Task<OperationResult<AreaResponseDto>> GetByNameAsync(string name);
+    Task<OperationResult<AreaResponseDto>> AddAsync(AreaCreateDto areaCreateDto);
+    Task<OperationResult<AreaResponseDto>> UpdateAsync(Guid id, AreaUpdateDto areaUpdateDto);
+    Task<OperationResult> DeleteAsync(Guid areaId);
 }
 
