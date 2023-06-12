@@ -4,6 +4,7 @@ using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(EnergyPricesDbContext))]
-    partial class EnergyPricesDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230612061555_AddDailyPriceCollectionAndHourlyPrice")]
+    partial class AddDailyPriceCollectionAndHourlyPrice
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -81,9 +84,6 @@ namespace Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("AreaId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime>("Created")
                         .HasColumnType("datetime2");
 
@@ -111,20 +111,24 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Core.Entities.DailyPriceCollection", b =>
                 {
-                    b.HasOne("Core.Entities.Area", null)
+                    b.HasOne("Core.Entities.Area", "Area")
                         .WithMany("DailyPrices")
                         .HasForeignKey("AreaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Area");
                 });
 
             modelBuilder.Entity("Core.Entities.HourlyPrice", b =>
                 {
-                    b.HasOne("Core.Entities.DailyPriceCollection", null)
+                    b.HasOne("Core.Entities.DailyPriceCollection", "DailyPriceCollection")
                         .WithMany("Prices")
                         .HasForeignKey("DailyPriceCollectionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("DailyPriceCollection");
                 });
 
             modelBuilder.Entity("Core.Entities.Area", b =>

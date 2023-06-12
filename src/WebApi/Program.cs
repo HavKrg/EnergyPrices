@@ -1,4 +1,5 @@
 using Application.DTOs.Area;
+using Application.DTOs.HourlyPrices;
 using Application.Interfaces;
 using Application.Services;
 using Core.Interfaces;
@@ -23,6 +24,8 @@ builder.Services.AddDbContext<EnergyPricesDbContext>(options =>
     options.UseSqlServer(connectionString));
 builder.Services.AddScoped<IAreaRepository, AreaRepository>();
 builder.Services.AddScoped<IAreaService, AreaService>();
+builder.Services.AddScoped<IDailyPricesRepository, DailyPricesRepository>();
+builder.Services.AddScoped<IDailyPricesService, DailyPricesService>();
 
 var app = builder.Build();
 
@@ -31,37 +34,26 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-
-
 }
-
-
 
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
-app.MapPost("EnergyPrices/v1/Areas", async (IAreaService areaService, AreaCreateDto areaCreateDto) =>
-{
-// Convert AreaCreateDTO to Area domain object
-    var response = await areaService.AddAsync(areaCreateDto);
-
-// Save the area to your data store or perform any other required actions
-    // ...
-
-    return Results.Created($"/EnergyPrices/v1/Areas/{response.Data.Id}", response.Data);
-});
-
+// Area Endpoints
 app.MapGet("EnergyPrices/v1/Areas", async (IAreaService areaService) =>
 {
     var result = await areaService.GetAllAsync();
 
-    return Results.Ok(result.Data);
+    if(result.IsSuccessful)
+        return Results.Ok(result.Data);
+    else
+        return Results.NotFound(result.ErrorMessage);
 });
 
-app.MapGet("EnergyPrices/v1/Areas/{id:guid}", async (IAreaService areaService, Guid id) =>
+app.MapGet("EnergyPrices/v1/Areas/{areaId:guid}", async (IAreaService areaService, Guid areaId) =>
 {
-    var result = await areaService.GetByIdAsync(id);
+    var result = await areaService.GetByIdAsync(areaId);
 
     if (!result.IsSuccessful)
     {
@@ -83,22 +75,65 @@ app.MapGet("EnergyPrices/v1/Areas/name/{name}", async (IAreaService areaService,
     return Results.Ok(result.Data);
 });
 
-app.MapPut("/EnergyPrices/v1/Areas/{id:guid}", async (IAreaService areaService, Guid id, AreaUpdateDto areaUpdateDto) =>
+app.MapPost("EnergyPrices/v1/Areas", async (IAreaService areaService, AreaCreateDto areaCreateDto) =>
 {
-    var result = await areaService.UpdateAsync(id, areaUpdateDto);
+    var response = await areaService.AddAsync(areaCreateDto);
+
+    return Results.Created($"/EnergyPrices/v1/Areas/{response.Data.Id}", response.Data);
+});
+
+app.MapPut("/EnergyPrices/v1/Areas/{areaId:guid}", async (IAreaService areaService, Guid areaId, AreaUpdateDto areaUpdateDto) =>
+{
+    var result = await areaService.UpdateAsync(areaId, areaUpdateDto);
     if(!result.IsSuccessful)
         return Results.NotFound(result.ErrorMessage);
     return Results.Ok(result.Data);
 });
 
-app.MapDelete("EnergyPrices/v1/Areas/{id:guid}", async (IAreaService areaService, Guid id) =>
+app.MapDelete("EnergyPrices/v1/Areas/{areaId:guid}", async (IAreaService areaService, Guid areaId) =>
     {
-        var result = await areaService.DeleteAsync(id);
+        var result = await areaService.DeleteAsync(areaId);
         if(!result.IsSuccessful == true)
             return Results.NotFound(result.ErrorMessage);
         return Results.Ok();
     });
 
+// DailyPrices Endpoints
+app.MapGet("EnergyPrices/v1/Areas/{areaId:guid}/today", async (IDailyPricesService dailyPricesService, Guid areaId) =>
+{
+    var result = await dailyPricesService.GetByAreaAndDate(areaId, DateTime.Today.Date);
+
+    if(result.IsSuccessful)
+        return Results.Ok(result.Data);
+    else
+        return  Results.NotFound(result.ErrorMessage);
+});
+
+app.MapGet("EnergyPrices/v1/Areas/{areaId:guid}/tomorrow", async (IDailyPricesService dailyPricesService, Guid areaId) =>
+{
+    var result = await dailyPricesService.GetByAreaAndDate(areaId, DateTime.Today.AddDays(1).Date);
+
+    if(result.IsSuccessful)
+        return Results.Ok(result.Data);
+    else
+        return  Results.NotFound(result.ErrorMessage);
+});
+
+app.MapPost("EnergyPrices/v1/Areas/{areaId:guid}", async (IDailyPricesService dailyPricesService, List<HourlyPriceCreateDto> prices, Guid areaId) =>
+{
+    if(prices.Count() != 24)
+        return Results.BadRequest("invalid request");
+    var result = await dailyPricesService.AddAsync(areaId, DateTime.Today.AddDays(1).Date, prices);
+
+
+    if(result is { IsSuccessful: true, Data: not null })
+        return Results.Created($"/EnergyPrices/v1/Areas/{result.Data.AreaId}/{result.Data.Id}", result.Data);
+    return Results.Problem(result.ErrorMessage);
+});
+
+
 app.MapControllers();
 
 app.Run();
+
+

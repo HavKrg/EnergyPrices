@@ -17,13 +17,6 @@ public class AreaMappers
 
     public static AreaResponseDto AreaToAreaResponseMapper(Area area)
     {
-        return new AreaResponseDto()
-        {
-            Id = area.Id,
-            Name = area.Name,
-            Description = area.Description,
-            Created = area.Created,
-            Modified = area.Modified
-        };
+        return new AreaResponseDto(area.Id, area.Created, area.Modified, area.Name, area.Description);
     }
 }

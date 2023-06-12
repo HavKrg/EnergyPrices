@@ -24,12 +24,12 @@ public class AreaRepository : IAreaRepository
         
     }
 
-    public async Task<Area?> GetByIdAsync(Guid id)
+    public async Task<Area?> GetByIdAsync(Guid areaId)
     {
-        var area = await _context.Areas.FindAsync(id);
+        var area = await _context.Areas.FindAsync(areaId);
         if (area == null)
         {
-            Console.WriteLine($"Area with ID {id} was not found.");
+            Console.WriteLine($"Area with ID {areaId} was not found.");
             return null;
         }
         
