@@ -7,7 +7,6 @@ public class HourlyPriceCreateDto {
 
     public HourlyPriceCreateDto(int hour, int price, DateTime date)
     {
-        
         Hour = hour;
         Price = price;
         Date = date;

@@ -104,6 +104,13 @@ public class DailyPricesService : IDailyPricesService {
         if(area == null)
             return OperationResult<DailyPriceCollectionResponseDto>
                     .Failure($"unable to find an Area with ID: {areaId}");
+
+        var priceExists = _dailyPricesRepository.GetByAreaAndDate(areaId, date);
+
+        if(priceExists != null)
+            return OperationResult<DailyPriceCollectionResponseDto>
+                    .Failure($"database already have prices for {area.Name} on {date}");
+
         var dailyPriceCollection = new DailyPriceCollection(areaId, date);
 
         foreach (var hourlyPrice in prices)

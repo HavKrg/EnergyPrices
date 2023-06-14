@@ -7,6 +7,7 @@ using Infrastructure.Data;
 using Infrastructure.Repositories;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using WebApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,13 +20,14 @@ builder.Services.AddSwaggerGen();
 
 
 var connectionString = builder.Configuration["ConnectionStrings:DefaultConnection"];
-
+builder.Services.AddHttpClient();
 builder.Services.AddDbContext<EnergyPricesDbContext>(options =>
-    options.UseSqlServer(connectionString));
-builder.Services.AddScoped<IAreaRepository, AreaRepository>();
-builder.Services.AddScoped<IAreaService, AreaService>();
-builder.Services.AddScoped<IDailyPricesRepository, DailyPricesRepository>();
-builder.Services.AddScoped<IDailyPricesService, DailyPricesService>();
+    options.UseSqlServer(connectionString), ServiceLifetime.Singleton);
+builder.Services.AddSingleton<IAreaRepository, AreaRepository>();
+builder.Services.AddSingleton<IAreaService, AreaService>();
+builder.Services.AddSingleton<IDailyPricesRepository, DailyPricesRepository>();
+builder.Services.AddSingleton<IDailyPricesService, DailyPricesService>();
+builder.Services.AddHostedService<PriceGrabberService>();
 
 var app = builder.Build();
 
