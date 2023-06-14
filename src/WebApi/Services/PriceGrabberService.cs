@@ -27,70 +27,69 @@ public class PriceGrabberService : BackgroundService
         while (!stoppingToken.IsCancellationRequested)
         {
             Console.WriteLine($"{DateTime.Now} - Getting tomorrows prices");
-            /*Console.WriteLine(_requestUri);
-        var areas = await _areaService.GetAllAsync();
-        var response = await _httpClient.GetAsync(_requestUri);
-        var content = await response.Content.ReadAsStringAsync();
-        var json = JsonDocument.Parse(content).RootElement;
-        var date = DateTime.Now.AddDays(1).Date;
+            Console.WriteLine(_requestUri);
+            var areas = await _areaService.GetAllAsync();
+            var response = await _httpClient.GetAsync(_requestUri);
+            var content = await response.Content.ReadAsStringAsync();
+            var json = JsonDocument.Parse(content).RootElement;
+            var date = DateTime.Now.AddDays(1).Date;
 
-        if (!areas.IsSuccessful)
-            Console.WriteLine("No areas in DB yet");
-        else
-        {
-            foreach (var area in areas.Data)
+            if (!areas.IsSuccessful)
+                Console.WriteLine("No areas in DB yet");
+            else
             {
-                Console.WriteLine($"Getting prices for {area.Name}");
-                var result = new List<HourlyPriceCreateDto>();
-
-                foreach (var row in json.GetProperty("data").GetProperty("Rows").EnumerateArray())
+                foreach (var area in areas.Data)
                 {
-                    if (System.Text.RegularExpressions.Regex.IsMatch(row.GetProperty("Name").GetString(), "^[0-2].*"))
-                    {
-                        foreach (var column in row.GetProperty("Columns").EnumerateArray())
-                        {
-                            try
-                            {
-                                if (column.GetProperty("Name").GetString() == area.Name)
-                                {
-                                    var periodString = System.Text.RegularExpressions.Regex
-                                        .Match(row.GetProperty("Name").GetString(), "([0-9]+)").Groups[1].Value;
-                                    var period = int.Parse(periodString);
-                                    var priceString = column.GetProperty("Value").GetString().Replace(" ", "");
-                                    var price = int.Parse(priceString.Split(',')[0]) / 10;
+                    Console.WriteLine($"Getting prices for {area.Name}");
+                    var result = new List<HourlyPriceCreateDto>();
 
-                                    result.Add(new HourlyPriceCreateDto(period, price, date));
-                                }
-                            }
-                            catch (Exception ex)
+                    foreach (var row in json.GetProperty("data").GetProperty("Rows").EnumerateArray())
+                    {
+                        if (System.Text.RegularExpressions.Regex.IsMatch(row.GetProperty("Name").GetString(),
+                                "^[0-2].*"))
+                        {
+                            foreach (var column in row.GetProperty("Columns").EnumerateArray())
                             {
-                                Console.WriteLine($"Error getting data for {area.Name}: {ex.Message}");
+                                try
+                                {
+                                    if (column.GetProperty("Name").GetString() == area.Name)
+                                    {
+                                        var periodString = System.Text.RegularExpressions.Regex
+                                            .Match(row.GetProperty("Name").GetString(), "([0-9]+)").Groups[1].Value;
+                                        var period = int.Parse(periodString);
+                                        var priceString = column.GetProperty("Value").GetString().Replace(" ", "");
+                                        var price = int.Parse(priceString.Split(',')[0]) / 10;
+
+                                        result.Add(new HourlyPriceCreateDto(period, price, date));
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    Console.WriteLine($"Error getting data for {area.Name}: {ex.Message}");
+                                }
                             }
                         }
                     }
-                }
 
-                if (result.Count > 0)
-                {
-                    var addResult = await _dailyPricesService.AddAsync(area.Id, result[0].Date, result);
-                    if (addResult.IsSuccessful)
-                        Console.WriteLine($"succesfully added prices for {area.Name} on {date}");
+                    if (result.Count > 0)
+                    {
+                        var addResult = await _dailyPricesService.AddAsync(area.Id, result[0].Date, result);
+                        if (addResult.IsSuccessful)
+                            Console.WriteLine($"succesfully added prices for {area.Name} on {date.Date}");
+                        else
+                        {
+                            Console.WriteLine(
+                                $"failed to add prices for {area.Name} on {date.Date} : {addResult.ErrorMessage}");
+                        }
+                    }
                     else
                     {
-                        Console.WriteLine($"failed to add prices for {area.Name} on {date} : {addResult.ErrorMessage}");
-
+                        Console.WriteLine($"{DateTime.Now} No data found for Area: {area.Name}");
                     }
-
-                }
-                else
-                {
-                    Console.WriteLine($"{DateTime.Now} No data found for Area: {area.Name}");
                 }
             }
-        }*/
-            Console.WriteLine($"{DateTime.Now} - Run number {_counter}");
-            _counter +=1;
-            await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);    
+
+            await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
         }
     }
 }
