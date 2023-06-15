@@ -40,13 +40,13 @@ var connectionStringBuilder = new SqlConnectionStringBuilder();
 connectionStringBuilder.DataSource = "localhost";
 connectionStringBuilder.Encrypt = true;
 connectionStringBuilder.TrustServerCertificate = true;
-/*connectionStringBuilder.UserID = Environment.GetEnvironmentVariable("DB_LOGIN");
-connectionStringBuilder.Password = Environment.GetEnvironmentVariable("DB_PASSWORD");
-connectionStringBuilder.InitialCatalog = Environment.GetEnvironmentVariable("DB_NAME");*/
+connectionStringBuilder.UserID = Environment.GetEnvironmentVariable("DB_LOGIN");
+connectionStringBuilder.Passwo.rd = Environment.GetEnvironmentVariable("DB_PASSWORD");
+connectionStringBuilder.InitialCatalog = Environment.GetEnvironmentVariable("DB_NAME");
 
-connectionStringBuilder.UserID = "myeplogin";
+/*connectionStringBuilder.UserID = "myeplogin";
 connectionStringBuilder.Password = "myStrong(!)Password";
-connectionStringBuilder.InitialCatalog = "TestDB";
+connectionStringBuilder.InitialCatalog = "TestDB";*/
 
 
 string connectionString = connectionStringBuilder.ConnectionString;

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(EnergyPricesDbContext))]
-    [Migration("20230612061555_AddDailyPriceCollectionAndHourlyPrice")]
-    partial class AddDailyPriceCollectionAndHourlyPrice
+    [Migration("20230615094953_InitialMigration")]
+    partial class InitialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -84,6 +84,9 @@ namespace Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid>("AreaId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTime>("Created")
                         .HasColumnType("datetime2");
 
@@ -111,24 +114,20 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Core.Entities.DailyPriceCollection", b =>
                 {
-                    b.HasOne("Core.Entities.Area", "Area")
+                    b.HasOne("Core.Entities.Area", null)
                         .WithMany("DailyPrices")
                         .HasForeignKey("AreaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Area");
                 });
 
             modelBuilder.Entity("Core.Entities.HourlyPrice", b =>
                 {
-                    b.HasOne("Core.Entities.DailyPriceCollection", "DailyPriceCollection")
+                    b.HasOne("Core.Entities.DailyPriceCollection", null)
                         .WithMany("Prices")
                         .HasForeignKey("DailyPriceCollectionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("DailyPriceCollection");
                 });
 
             modelBuilder.Entity("Core.Entities.Area", b =>
