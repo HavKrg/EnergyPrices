@@ -1,3 +1,4 @@
+using System.Configuration;
 using Application.DTOs.Area;
 using Application.DTOs.HourlyPrices;
 using Application.Interfaces;
@@ -7,27 +8,58 @@ using Infrastructure.Data;
 using Infrastructure.Repositories;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Quartz;
+using WebApi.QuartzJobs.PriceGrabber;
 using WebApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
+builder.Services.AddQuartz(q =>
+    {
+        q.UseMicrosoftDependencyInjectionJobFactory();
+        q.AddJob<PriceGrabberJob>(j => j.StoreDurably().WithIdentity("PriceGrabberJob", "JobGroup"));
+
+        // Define your job trigger for 14:30 daily
+        q.AddTrigger(t => t
+            .ForJob("PriceGrabberJob", "JobGroup")
+            .WithIdentity("TriggerPriceGrabber", "JobGroup")
+            .WithCronSchedule("0 36 18 * * ?"));
+    });
+
+builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
+
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Create connection string
+var connectionStringBuilder = new SqlConnectionStringBuilder();
+connectionStringBuilder.DataSource = "localhost";
+connectionStringBuilder.Encrypt = true;
+connectionStringBuilder.TrustServerCertificate = true;
+/*connectionStringBuilder.UserID = Environment.GetEnvironmentVariable("DB_LOGIN");
+connectionStringBuilder.Password = Environment.GetEnvironmentVariable("DB_PASSWORD");
+connectionStringBuilder.InitialCatalog = Environment.GetEnvironmentVariable("DB_NAME");*/
 
-var connectionString = builder.Configuration["ConnectionStrings:DefaultConnection"];
+connectionStringBuilder.UserID = "myeplogin";
+connectionStringBuilder.Password = "myStrong(!)Password";
+connectionStringBuilder.InitialCatalog = "TestDB";
+
+
+string connectionString = connectionStringBuilder.ConnectionString;
+Console.WriteLine(connectionString);
+
 builder.Services.AddHttpClient();
 builder.Services.AddDbContext<EnergyPricesDbContext>(options =>
     options.UseSqlServer(connectionString), ServiceLifetime.Singleton);
-builder.Services.AddSingleton<IAreaRepository, AreaRepository>();
-builder.Services.AddSingleton<IAreaService, AreaService>();
-builder.Services.AddSingleton<IDailyPricesRepository, DailyPricesRepository>();
-builder.Services.AddSingleton<IDailyPricesService, DailyPricesService>();
-builder.Services.AddHostedService<PriceGrabberService>();
+builder.Services.AddScoped<IAreaRepository, AreaRepository>();
+builder.Services.AddScoped<IAreaService, AreaService>();
+builder.Services.AddScoped<IDailyPricesRepository, DailyPricesRepository>();
+builder.Services.AddScoped<IDailyPricesService, DailyPricesService>();
+
 
 var app = builder.Build();
 
