@@ -41,7 +41,7 @@ connectionStringBuilder.DataSource = "localhost";
 connectionStringBuilder.Encrypt = true;
 connectionStringBuilder.TrustServerCertificate = true;
 connectionStringBuilder.UserID = Environment.GetEnvironmentVariable("DB_LOGIN");
-connectionStringBuilder.Passwo.rd = Environment.GetEnvironmentVariable("DB_PASSWORD");
+connectionStringBuilder.Password = Environment.GetEnvironmentVariable("DB_PASSWORD");
 connectionStringBuilder.InitialCatalog = Environment.GetEnvironmentVariable("DB_NAME");
 
 /*connectionStringBuilder.UserID = "myeplogin";
