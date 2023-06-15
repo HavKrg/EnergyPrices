@@ -35,6 +35,7 @@ COPY --from=build /app .
 
 # Expose the Kestrel web server port
 EXPOSE 80
+EXPOSE 443
 
 # Set the entrypoint to start the application
 ENTRYPOINT ["dotnet", "WebApi.dll"]
