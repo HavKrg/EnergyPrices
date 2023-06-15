@@ -4,6 +4,8 @@
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <OutputType>Exe</OutputType>
     <UserSecretsId>4f078c7d-d1bf-476c-9944-f05ef8f60702</UserSecretsId>
   </PropertyGroup>
 
